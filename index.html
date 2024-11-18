@@ -90,21 +90,33 @@
 		 </ul>
 		 </div>
 		 </div>
-	 
-		 <div style="margin-top:23px;margin-left:5px;">
-			 
-			 <style>
-			 #yandex_rtb_R-A-201190-1 { width: 100%; height: 250px; overflow:hidden;}
-			 @media(min-width: 760px) { #yandex_rtb_R-A-201190-1 { max-width: 728px; height: 90px;  } }
-			 @media(min-width: 900px) { #yandex_rtb_R-A-201190-1 { max-width: 468px; height: 90px;  } }
-			 @media(min-width: 1100px) { #yandex_rtb_R-A-201190-1{ max-width: 728px; height: 90px;} }
-			 @media(min-width: 1400px) { #yandex_rtb_R-A-201190-1 { max-width: 970px; height: 90px;} }
-			 </style>
-			 <!-- Yandex.RTB R-A-201190-1 -->
-			 <div id="yandex_rtb_R-A-201190-1"></div>
-		 </div>
-	 
-		 <p>Создаём класс db.js. Он будет иметь вид:</p>
+		 <p>Создаём проект и внутри файл index.js</p>
+		 <p>Пишем в консоли Windows внутри проекта: <b>npm init</b></p>
+		 <p><br>Устанавливаем библиотеки: <b>npm install express pd nodemon</b></p>
+
+		 <br>
+
+		<p>Создаём файл database.sql и прописываем команду для создания таблицы:</p>
+		<code>
+			CREATE TABLE IF NOT EXISTS cars(<br>
+				id SERIAL PRIMARY KEY,<br>
+				name VARCHAR(255),<br>
+				description VARCHAR(255),<br>
+				price INTEGER,<br>
+				img VARCHAR(255)<br>
+			);
+		</code>
+
+		<br>
+		<p>Затем открываем SQL Shell и прописываем команду: <b>CREATE DATABASE cardb;</b></p>
+		<p>Подключаемся к базе данных через команду <b>\connect carsdb</b> и вставляем код из database.sql в консоль и выполняем.</p>
+		<p>Чтобы убедиться, что всё работает пишем команду <b>SELECT * FROM CARS;</b></p>
+
+		<br>
+
+		<br>
+
+		<p>Создаём класс db.js. Он будет иметь вид:</p>
 		 <code>const Pool = require('pg').Pool;<br>
 			const pool = new Pool({<br>
 				user: 'postgres',<br>
@@ -115,6 +127,9 @@
 			});<br>
 			<br>
 			module.exports = pool;</code>
+		
+		<br>
+		<br>
 
 		 <div style="margin-top:25px;">
 	 <style>
