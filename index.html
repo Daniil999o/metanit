@@ -6,6 +6,16 @@
 <meta name="description" content="&#1055;&#1072;&#1090;&#1090;&#1077;&#1088;&#1085; MVC &#1074; Node.js, &#1086;&#1089;&#1085;&#1086;&#1074;&#1085;&#1099;&#1077; &#1082;&#1086;&#1084;&#1087;&#1086;&#1085;&#1077;&#1085;&#1090;&#1099;, &#1086;&#1087;&#1088;&#1077;&#1076;&#1077;&#1083;&#1077;&#1085;&#1080;&#1077; &#1089;&#1080;&#1089;&#1090;&#1077;&#1084;&#1099; &#1084;&#1072;&#1088;&#1096;&#1088;&#1091;&#1090;&#1080;&#1079;&#1072;&#1094;&#1080;&#1080; &#1080; &#1082;&#1086;&#1085;&#1090;&#1088;&#1086;&#1083;&#1083;&#1077;&#1088;&#1086;&#1074;">
 <meta name="viewport" content="width=device-width">
 <link href="css/style45.css" rel="stylesheet" type="text/css">
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.js"></script> <!-- js-beautify -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify-html.js"></script> <!-- Плагин HTML для js-beautify -->
+<script src="https://cdn.jsdelivr.net/npm/sql-formatter-plus@4.0.7/dist/sql-formatter.min.js"></script> <!-- sql-formatter -->
+<script src="https://unpkg.com/@prettyhtml/pretty-html@0.2.0/browser/standalone.js"></script> <!-- pretty-html -->
+
 </head>
 <body>
 <div id="container">
@@ -78,7 +88,7 @@
 	<div class="innercontainer">
  
 		<div class="item center menC">
-		  <h1>Паттерн MVC</h1><div class="date">Последнее обновление: 19.11.2022</div>
+		  <h1>Node JS</h1><div class="date">Последнее обновление: 19.11.2022</div>
 		 <div class="socBlock">
 		 <div class="share soctop">
 		 <ul>
@@ -92,12 +102,12 @@
 		 </div>
 		 <p>Создаём проект и внутри файл index.js</p>
 		 <p>Пишем в консоли Windows внутри проекта: <b>npm init</b></p>
-		 <p><br>Устанавливаем библиотеки: <b>npm install express pd nodemon</b></p>
+		 <p><br>Устанавливаем библиотеки: <b>npm install express pg nodemon</b></p>
 
 		 <br>
 
 		<p>Создаём файл database.sql и прописываем команду для создания таблицы:</p>
-		<code>
+		<pre><code class="language-sql">
 			CREATE TABLE IF NOT EXISTS cars(<br>
 				id SERIAL PRIMARY KEY,<br>
 				name VARCHAR(255),<br>
@@ -105,10 +115,10 @@
 				price INTEGER,<br>
 				img VARCHAR(255)<br>
 			);
-		</code>
+		</code></pre>
 
 		<br>
-		<p>Затем открываем SQL Shell и прописываем команду: <b>CREATE DATABASE cardb;</b></p>
+		<p>Затем открываем PSQL Shell и прописываем команду: <b>CREATE DATABASE cardb;</b></p>
 		<p>Подключаемся к базе данных через команду <b>\connect carsdb</b> и вставляем код из database.sql в консоль и выполняем.</p>
 		<p>Чтобы убедиться, что всё работает пишем команду <b>SELECT * FROM CARS;</b></p>
 
@@ -117,7 +127,7 @@
 		<br>
 
 		<p>Создаём класс db.js. Он будет иметь вид:</p>
-		 <code>const Pool = require('pg').Pool;<br>
+		<pre><code class="language-javascript">const Pool = require('pg').Pool;<br>
 			const pool = new Pool({<br>
 				user: 'postgres',<br>
 				host: 'localhost',<br>
@@ -126,8 +136,229 @@
 				port: 5432,<br>
 			});<br>
 			<br>
-			module.exports = pool;</code>
+			module.exports = pool;</code></pre>
+
+		<p>Или прописываем другие значения, исходя из настроек PSQL (другой пароль, пользователь).</p>
+
+		<br>
+		<br>
+
+		<p>Внутри проекта создаём файл index.js и пишем внутри него:</p>
+
+		<pre><code class="language-javascript">const express = require('express');<br>
+			const PORT = process.env.PORT || 8080;<br>
+			<br>
+			const carRouter = require('./routes/car.routes.js');<br>
+			<br>
+			const app = express();<br>
+			<br>
+			app.use(express.json());<br>
+			app.use(carRouter);<br>
+			<br>
+			app.use(express.static(__dirname));<br>
+			<br>
+			app.get('/', (req, res)=>{<br>
+				res.sendFile(__dirname + '/static/index.html');<br>
+			});<br>
+			<br>
+			app.get('/car/:id', (req, res)=>{<br>
+				res.sendFile(__dirname + '/static/public/singlecar.html');<br>
+			});<br>
+			<br>
+			app.listen(PORT, () => {<br>
+				console.log(`Server is running on port ${PORT}`);<br>
+			});</code></pre>
 		
+		<br>
+
+		<p>Далее внутри проекта создаём папку controllers и внутри файл car.controller.js</p>
+		<p>В нём пишем:</p>
+
+		<pre><code class="language-javascript">const db = require('../db.js');<br>
+			<br>
+			class CarController {<br>
+				async createCar(req, res) {<br>
+					const {name, description, price, img} = req.body;<br>
+					<br>
+					const newCar = await db.query(`INSERT INTO cars (name, description, price, img) VALUES ($1, $2, $3, $4) RETURNING *`, [name, description, price, img]);<br>
+					res.json(newCar.rows[0]);<br>
+				}<br>
+				<br>
+				async getCars(req, res) {<br>
+					const cars = await db.query(`SELECT * FROM cars`);<br>
+					console.log(cars.rows);<br>
+					res.json(cars.rows);<br>
+				}<br>
+				<br>
+				async getCar(req, res) {<br>
+					const id = req.params.id;<br>
+					<br>
+					const car = await db.query(`SELECT * FROM cars WHERE id=$1`, [id]);<br>
+					console.log(car.rows);<br>
+					res.json(car.rows);<br>
+				}<br>
+				<br>
+				async updateCar(req, res) {<br>
+					const {id, name, description, price, img} = req.body;<br>
+					<br>
+					const newCar = await db.query(`UPDATE cars SET name=$1, description=$2, price=$3, img=$4 WHERE id=$5 RETURNING *`, [name, description, price, img, id]);<br>
+					res.json(newCar.rows[0]);<br>
+				}<br>
+				<br>
+				async deleteCar(req, res) {<br>
+					const id = req.params.id;<br>
+					<br>
+					await db.query(`DELETE FROM cars WHERE id=$1`, [id]);<br>
+				}<br>
+			}<br>
+			<br>
+			module.exports = new CarController();</code></pre>
+
+		<br>
+		<br>
+
+		<p>Затем внутри проекта создаём папку requests и внутри файл car.requests.js</p>
+		<p>Вставляем этот код:</p>
+		
+		<pre><code class="language-javascript">async function getAllCars() {<br>
+			const response = await fetch('/api/car', {<br>
+				method: 'GET'<br>
+			});<br>
+			<br>
+			const result = await response.json();<br>
+			return result;<br>
+		}<br>
+		<br>
+		async function getOneCar(id) {<br>
+			const response = await fetch(`/api/car/` + id, {<br>
+				method: 'GET'<br>
+			});<br>
+			<br>
+			const result = await response.json();<br>
+			return result;<br>
+		}<br>
+		<br>
+		async function addCar(name, description, price, img) {<br>
+			await fetch('/api/car', {<br>
+				method: 'POST',<br>
+				headers: {<br>
+					'Content-Type': 'application/json'<br>
+				},<br>
+				body: JSON.stringify({<br>
+					name,<br>
+					description,<br>
+					price,<br>
+					img<br>
+				})<br>
+			});<br>
+		}<br>
+		<br>
+		async function deleteCar(id) {<br>
+			await fetch('/api/car/' + id, {<br>
+				method: 'DELETE'<br>
+			});<br>
+		}<br>
+		<br>
+		async function updateCar(id, name, description, price, img) {<br>
+			await fetch('/api/car/', {<br>
+				method: 'PUT',<br>
+				headers: {<br>
+					'Content-Type': 'application/json'<br>
+				},<br>
+				body: JSON.stringify({<br>
+					id,<br>
+					name,<br>
+					description,<br>
+					price,<br>
+					img<br>
+				})<br>
+			});<br>
+		}<br>
+		<br>
+		export {getAllCars, getOneCar, deleteCar, updateCar, addCar}</code></pre>
+
+		<br>
+		<br>
+
+		<p>Далее нам понадобится роутер. Создаём в проекте папку routes и внутри файл car.routes.js</p>
+		<p>Вставим этот код:</p>
+
+		<pre><code class="language-javascript">const Router = require('express');<br>
+			const router = new Router();<br>
+			<br>
+			const carController = require('../controllers/car.controller.js');<br>
+			<br>
+			router.post('/api/car', carController.createCar);<br>
+			router.get('/api/car', carController.getCars);<br>
+			router.get('/api/car/:id', carController.getCar);<br>
+			router.put('/api/car', carController.updateCar);<br>
+			router.delete('/api/car/:id', carController.deleteCar);<br>
+			<br>
+			module.exports = router;</code></pre>
+
+		<br>
+		<br>
+
+		<p>Весь бэкенд написан. Далее осталось создать фронтенд часть для нашего сайта.</p>
+		<p>Создаём папку static в нашем проекте.</p>
+		<p>В папке static создаём файл index.html</p>
+		<p>Вставляем этот код:</p>
+
+		<pre><code id="htmlCode1" class="language-html"></code></pre>
+
+		<script src="js/index.js" defer></script>
+
+		<br>
+
+		<p>Это основная страница нашего сайта.</p>
+
+		<p>Затем нам нужно создать страницу для карточки с товаром. Создаём внутри папки static новую папку public</p>
+		<p>Внутри папки public создаём файл singlecar.html</p>
+		<p>Копируем и вставляем этот код:</p>
+
+		<pre><code id="htmlCode2" class="language-html"></code></pre>
+
+		<br>
+		<br>
+
+		<p>Осталось ещё пара шагов. Осталось только написать логику для наших страниц.</p>
+		<p>В папке проекта создаём новую папку frontend и внутри этой папки создаём папку components</p>
+		<p>В папке components создаём файл item.js</p>
+
+		<p>В нём пишем:</p>
+
+		<pre><code id="jsCode1" class="language-javascript"></code></pre>
+
+		<p>Это будет карточка для товаров на главной странице.</p>
+
+		<br>
+
+		<p>Далее в папке frontend создаём файл main.js - это логика для основной страницы</p>
+
+		<p>Вставляем код:</p>
+
+		<pre><code id="jsCode2" class="language-javascript"></code></pre>
+
+		<br>
+
+		<p>Теперь нам нужна логика для страницы singlecar. Внутри папки frontend создаём файл singlecar.js</p>
+		<p>Вставляем этот код:</p>
+
+		<pre><code id="jsCode3" class="language-javascript"></code></pre>
+
+
+		<br>
+		<br>
+		<br>
+
+		<p>Теперь сайт готов. Осталось только запустить его.</p>
+		<p>Открываем PowerShell в редакторе VS Code (ALT + F12) и пишем команду nodemon index.js</p>
+
+		<p>Сайт запущен. Перейдите по адресу <a href="https://localhost:8080/" target="_blank">https://localhost:8080/</a> для открытия.</p>
+
+		<br>
+		<p>Ps. Если что-то не получилось, можете просто скачать архив с готовым проектом по <a href="data/cars.zip" target="_blank">этой ссылке</a></p>
+
 		<br>
 		<br>
 

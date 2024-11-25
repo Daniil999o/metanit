@@ -459,3 +459,24 @@ background: -webkit-linear-gradient(90deg, var(--menu-second-bg-color) 0%, var(-
 #menu .mainmenu li> a { min-width:90px; }
 .item.right { width: 300px;min-width: 300px;} 
 }
+
+/* code {
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    font-family: 'Consolas';
+    overflow-x: auto;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+*/
+
+code {
+	background-color: #f0f0f0; /* Светло-серый фон */
+	border-radius: 4px; /* Скругленные углы */
+	font-family: monospace; /* Моноширинный шрифт */
+	color: #333; /* Темно-серый цвет текста */
+  }
+
+  pre code {
+	white-space: pre-wrap; /* Для переноса длинных строк */
+	tab-size: 4; /* Размер табуляции в пробелах */
+  }
